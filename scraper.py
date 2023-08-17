@@ -3,19 +3,18 @@ from annotation import annotate_image
 
 
 def scrape_data(search_term):
-    print(search_term)
-    search_term = 'canadian rockies'
+    #print(search_term)
 
-    #image_results = search_images(search_term)
+    image_results = search_images(search_term)
 
-    #process_images(image_results, search_term)
+    process_images(image_results, search_term)
 
 
 def search_images(search_term):
     # code mostly pulled from Bing documentation
 
     # create and initialize the application
-    subscription_key = 'Enter your key here'
+    subscription_key = '72c3cc8969dc4e6f9a1a6bbd4ed4b044'
     search_url = "https://api.bing.microsoft.com/v7.0/images/search"
 
     # add your subscription key to the Ocp-Apim-Subscription-Key header
@@ -28,6 +27,7 @@ def search_images(search_term):
     response = requests.get(search_url, headers=headers, params=params)
     response.raise_for_status()
     search_results = response.json()
+    print(search_results)
     img_urls = [img["contentUrl"] for img in search_results["value"]]
 
     return img_urls
