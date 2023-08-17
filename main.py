@@ -1,7 +1,10 @@
 from functools import partial
+from io import BytesIO
+
+import numpy as np
 from cv2 import cv2
-from azure.cognitiveservices.search.imagesearch import ImageSearchClient
-from msrest.authentication import CognitiveServicesCredentials
+import requests
+from PIL import Image
 
 coords = []
 drawing = False
@@ -23,7 +26,7 @@ def submit_annotation(img_height, img_width, file_name, value):
         file.close()
 def draw_bounding_box(event, x, y, flags, img):
     global coords, drawing
-    # check the event type
+
     # user has clicked the button
     if event == cv2.EVENT_LBUTTONDOWN or event == cv2.EVENT_RBUTTONDOWN:
         # user started drawing box
@@ -75,7 +78,13 @@ if __name__ == '__main__':
     #prompt user if they are sure they want to scrape for entered search phrase
 
     #if entere Y
-    annotate_image('/Users/anishganti/outfit inspo/image.jpg')
+    #annotate_image('/Users/anishganti/outfit inspo/image.jpg')
+    img_data = requests.get('https://mylifeintheocean.files.wordpress.com/2012/11/tropical-ocean-wallpaper-1920x12003.jpg')
+    img_data.raise_for_status()
+    img_stream = BytesIO(img_data.content)
+    img = cv2.imdecode(np.frombuffer(img_stream.read(), np.uint8), 1)
+    cv2.imshow('img',img)
+    cv2.waitKey(0)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
@@ -89,16 +98,34 @@ def scrape_data():
 
 
 def search_images(search_term):
-    # enter your subscription key credentials here
-    subscription_key = 'Enter your key here'
-    subscription_endpoint = 'Enter your endpoint here'
+    # code mostly pulled from Bing documentation
 
-    # create an instance of CognitiveServiceCredentials and use it to instantiate imageClient
-    client = ImageSearchClient(endpoint=subscription_endpoint,
-                               credentials=CognitiveServicesCredentials(subscription_key))
+    # create and initialize the application
+    subscription_key = 'Enter your key here'
+    search_url = "https://api.bing.microsoft.com/v7.0/images/search"
+
+    # add your subscription key to the Ocp-Apim-Subscription-Key header
+    headers = {"Ocp-Apim-Subscription-Key": subscription_key}
+
+    # create and send a search request
+    params = {"q": search_term, "license": "public", "imageType": "photo"}
 
     # send search query to Bing Image Search API
-    image_results = client.images.search(query=search_term)
+    response = requests.get(search_url, headers=headers, params=params)
+    response.raise_for_status()
+    search_results = response.json()
+    img_urls = [img["contentUrl"] for img in search_results["value"]]
+
+    # view the results
+    #f, axes = plt.subplots(4, 4)
+    for i in range(4):
+        for j in range(4):
+            img_data = requests.get(img_urls[i+4*j])
+            img_data.raise_for_status()
+            img = BytesIO(img_data.content)
+            axes[i][j].imshow(image)
+            axes[i][j].axis("off")
+    plt.show()
 
 def process_images(image_results):
     for image in image_results:
