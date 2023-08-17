@@ -6,8 +6,28 @@ coords = []
 drawing = False
 
 
+def resize_with_padding(img):
+    # default size for YOLOv5 is 640x640
+
+    # scale the image so that the larger dimension is 640
+    print(img.shape)
+    height, width, channels = img.shape
+    scale = 640/max(height, width)
+    img = cv2.resize(img, (int(scale*height), int(scale*width)))
+    print(img.shape)
+    # add padding to make the image 640x640
+    # separate each side to take care of rounding issues
+    height, width, channels = img.shape
+    delta_w = 640-width
+    delta_h = 640-height
+    top, bottom = int(delta_h/2), delta_h-int(delta_h/2)
+    left, right = int(delta_w/2), delta_w-int(delta_w/2)
+    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+    print(img.shape)
+
+    return img
 def submit_annotation(img_height, img_width, file_name):
-    # calculate center coordinates and bounding box dimensions
+    # calculate center coordinates and bounding box dimensions for image
     x_center = ((coords[1][0] + coords[0][0]) / 2) / img_width
     y_center = ((coords[1][1] + coords[0][1]) / 2) / img_height
     width = (coords[1][0] - coords[0][0]) / img_width
@@ -51,6 +71,9 @@ def annotate_image(img_data, img_name):
     if img is None:
         return True
 
+    # resize the image to fit YOLOv5 model input format
+    img = resize_with_padding(img)
+
     # display the image
     cv2.imshow('image', img)
 
@@ -65,7 +88,6 @@ def annotate_image(img_data, img_name):
     while next is False:
         # get value of key user pressed
         key = cv2.waitKey(0)
-        print(key)
         if key == 27:
             # user pressed 'esc', exit the program
             return False
