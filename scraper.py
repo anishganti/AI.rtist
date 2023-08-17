@@ -3,7 +3,7 @@ from annotation import annotate_image
 
 
 def scrape_data(search_term):
-    #print(search_term)
+    # print(search_term)
 
     image_results = search_images(search_term)
 
@@ -27,7 +27,6 @@ def search_images(search_term):
     response = requests.get(search_url, headers=headers, params=params)
     response.raise_for_status()
     search_results = response.json()
-    print(search_results)
     img_urls = [img["contentUrl"] for img in search_results["value"]]
 
     return img_urls
@@ -38,6 +37,12 @@ def process_images(img_urls, search_term):
 
     # view results of search request and annotate
     for img_url in img_urls:
-        img_data = requests.get(img_url)
-        annotate_image(img_data, search_term+str(counter))
-        counter+=1
+        if img_url is not None:
+            img_data = requests.get(img_url)
+            success = annotate_image(img_data, search_term + str(counter))
+
+            # if user has pressed 'esc' key while annotating image, they quit the program
+            if success is False:
+                break
+
+            counter += 1
