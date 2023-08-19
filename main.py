@@ -5,6 +5,7 @@ from scraper import scrape_data
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser(description=
                                      'This script allows the user to enter a search term for Bing Images '
                                      'and annotate the images returned by the search request.')
