@@ -1,4 +1,8 @@
 import torch
+import ssl
+
+# create ssl certificate
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # load the model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
